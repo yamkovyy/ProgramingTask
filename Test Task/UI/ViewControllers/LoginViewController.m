@@ -50,19 +50,24 @@
     
     if ([self isEnteredDataValid: username andPassword: password])
     {
-        __weak LoginViewController *weakSelf = self;
+        __weak typeof (self) weakSelf = self;
         [[ActivityView instance] showInView: self.view];
         [[ServerManager sharedManager] loginUser: username withPassword: password completetionBlock:^(BOOL success, NSArray *availableGameWorlds, NSError *error) {
-            
+            typeof (self) strongSelf = weakSelf;
             [[ActivityView instance] hide];
-            if (success)
+            
+            if (strongSelf)
             {
-                [weakSelf performSegueWithIdentifier: kMainViewControllerSegueIdentifier sender: availableGameWorlds];
+                if (success)
+                {
+                    [strongSelf performSegueWithIdentifier: kMainViewControllerSegueIdentifier sender: availableGameWorlds];
+                }
+                else
+                {
+                    [Utils showAlertIn: strongSelf withTitle: @"Error" message: [error.userInfo objectForKey: NSLocalizedDescriptionKey] withDuration: 0.0f];
+                }
             }
-            else
-            {
-                [Utils showAlertIn: weakSelf withTitle: @"Error" message: [error.userInfo objectForKey: NSLocalizedDescriptionKey] withDuration: 0.0f];
-            }
+
         }];
     }
 }
